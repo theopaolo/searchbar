@@ -1,53 +1,61 @@
+
+
+<template>
+    <div class="search--btn  city">
+        <span><svg width="14" height="19" viewBox="0 0 14 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 19.0001C5.73694 17.9227 4.56619 16.7416 3.5 15.4691C1.9 13.5581 8.78894e-07 10.7121 8.78894e-07 8.00009C-0.00069302 6.61505 0.409509 5.26094 1.17869 4.10912C1.94788 2.9573 3.04147 2.05955 4.32107 1.52949C5.60067 0.999429 7.00875 0.860882 8.36712 1.13138C9.72548 1.40189 10.9731 2.06928 11.952 3.04909C12.6038 3.69795 13.1204 4.46963 13.4719 5.31947C13.8234 6.1693 14.0029 7.08042 14 8.00009C14 10.7121 12.1 13.5581 10.5 15.4691C9.4338 16.7416 8.26306 17.9227 7 19.0001ZM7 5.00009C6.20435 5.00009 5.44129 5.31616 4.87868 5.87877C4.31607 6.44138 4 7.20444 4 8.00009C4 8.79574 4.31607 9.5588 4.87868 10.1214C5.44129 10.684 6.20435 11.0001 7 11.0001C7.79565 11.0001 8.55871 10.684 9.12132 10.1214C9.68393 9.5588 10 8.79574 10 8.00009C10 7.20444 9.68393 6.44138 9.12132 5.87877C8.55871 5.31616 7.79565 5.00009 7 5.00009Z" fill="#C6CE52"/></svg></span>
+        <input v-model="city" placeholder="Ville ou Code Postal">
+        <p>{{ filteredCities }}</p>
+    </div>
+</template>
+
 <script>
-    import { def } from '@vue/shared';
-    import { ref, watch, computed, reactive } from 'vue'
-    
     export default {
-        setup() {
-            const city = ref('')
-            const cities = reactive({list: []});
-
-            const getCities = async () => {
-                const response = await fetch('./src/assets/cities.json')
-                const citiesCp = await response.json()
-                console.log(citiesCp);
-                cities.list = ref(citiesCp)
-            } 
-
-            function getCity() {
+        name: 'CityPostalCode',
+        data() {
+            return {
+                city: '',
+                cities: [],
+                filteredCities: [],
+            }
+        },
+        methods: {
+            getCities() {
                 fetch('./src/assets/cities.json')
                     .then((response) => {
                         return response.json();
                     })
                     .then((data) => {
                         let cities = data;
-                        console.log(cities);
                         for (let i = 0; i < cities.length; i++) {
-                            console.log(cities[i].Code_postal);
-                            cities.value.push(cities[i].Nom_commune);
-                        }
+                            this.cities.push(cities[i].Nom_commune.toLowerCase());
+                        }   
                     })
+            },
+            filterCitiesFromInput() {
+                let input = this.city;
+                let cities = this.cities;
+                
+                // this.filteredCities = cities.filter((city) => {
+                //     return city.includes(input.toLowerCase());
+                // })
+
+                for (let i = 0; i < cities.length; i++) {
+                    if (this.cities[i].Nom_commune.toLowerCase().includes(input.toLowerCase())) {
+                        this.filteredCities.push(cities[i]);
+                    }
                 }
             
-            return {
-                city,
-                cities,
-                getCities,
-                getCity
+                
             }
+        },
+        watch:  {
+            city: function() {
+                this.filterCitiesFromInput();
+            }
+        },
+        mounted() {
+            this.getCities();
+            this.filterCitiesFromInput();
         }
     }
 </script>
-
-<template>
-    <div class="search--btn  city">
-        <span><svg width="14" height="19" viewBox="0 0 14 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 19.0001C5.73694 17.9227 4.56619 16.7416 3.5 15.4691C1.9 13.5581 8.78894e-07 10.7121 8.78894e-07 8.00009C-0.00069302 6.61505 0.409509 5.26094 1.17869 4.10912C1.94788 2.9573 3.04147 2.05955 4.32107 1.52949C5.60067 0.999429 7.00875 0.860882 8.36712 1.13138C9.72548 1.40189 10.9731 2.06928 11.952 3.04909C12.6038 3.69795 13.1204 4.46963 13.4719 5.31947C13.8234 6.1693 14.0029 7.08042 14 8.00009C14 10.7121 12.1 13.5581 10.5 15.4691C9.4338 16.7416 8.26306 17.9227 7 19.0001ZM7 5.00009C6.20435 5.00009 5.44129 5.31616 4.87868 5.87877C4.31607 6.44138 4 7.20444 4 8.00009C4 8.79574 4.31607 9.5588 4.87868 10.1214C5.44129 10.684 6.20435 11.0001 7 11.0001C7.79565 11.0001 8.55871 10.684 9.12132 10.1214C9.68393 9.5588 10 8.79574 10 8.00009C10 7.20444 9.68393 6.44138 9.12132 5.87877C8.55871 5.31616 7.79565 5.00009 7 5.00009Z" fill="#C6CE52"/></svg></span>
-        <input v-model="city" type="select" placeholder="Ville ou Code Postal">
-        <p>City is: {{ city }}</p>
-        <p>{{ cities }}</p>
-    </div>
-</template>
-
-<style>
-
-</style>
